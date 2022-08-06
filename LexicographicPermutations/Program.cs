@@ -1,37 +1,62 @@
 ﻿// Lexicographic permutations
 
-HashSet<string> memCount = new HashSet<string>();
-
-void Permute(string value, int la, int lb)
+IEnumerable<string> GetPermutations(string value)
 {
-    if (la == lb)
+    var strArr = value.ToCharArray();
+
+    var size = strArr.Length;
+    
+    Array.Sort(strArr);
+
+    var isCompleted = false;
+    while (!isCompleted)
     {
-        if (memCount.Count > 1000000) return;
-        Console.WriteLine($"{value} | {memCount.Count}");
-        memCount.Add(value);
-    }
-    else
-    {
-        for (int i = la; i < lb; i++)
+        var output = new string(strArr);
+        
+        int index1;
+        for (index1 = size - 2; index1 >= 0; --index1)
+            if(strArr[index1] < strArr[index1+1]) break;
+
+        if (index1 == -1)
+            isCompleted = true;
+        else
         {
-            value = Swap(value, la, i);
-            Permute(value, la + 1, lb);
-            value = Swap(value, la, i);
+            var index2 = FindCharIndex(strArr, strArr[index1], index1 + 1);
+            Swap<char>(strArr, index1, index2);
+            Array.Sort(strArr, index1 + 1, size - index1 - 1);
         }
+        
+        yield return output;
     }
 }
 
-string Swap(string value, int i, int r)
+int FindCharIndex(char[] strArr, char maxChar, int maxIndex)
 {
-    var valChars = value.Select(x => x.ToString()).ToArray();
-    (valChars[i], valChars[r]) = (valChars[r], valChars[i]);
-    return string.Join("", valChars);
+    int index = maxIndex;
+    for (int i = maxIndex + 1; i < strArr.Length; i++)
+    {
+        if (maxChar < strArr[i] && strArr[i] < strArr[index])
+            index = i;
+    }
+    return index;
+}
+
+void Swap<T>(T[] strArr, int i, int r)
+{
+    (strArr[i], strArr[r]) = (strArr[r], strArr[i]);
 }
 
 var number = "0123456789";
-//var number = "012";
-Permute(number, 0, number.Length);
+//var number = "210";
+//var number = "ABCD";
+
+var i = 1;
+foreach (var permutation in GetPermutations(number).Skip(999_999).Take(1))
+{
+    Console.Write(i++ + " - ");
+    Console.WriteLine(permutation);
+}
 
 Console.WriteLine($"----------------------");
-Console.WriteLine(memCount.OrderByDescending(x => x).First());
+//Console.WriteLine(memCount.OrderByDescending(x => x).First());
 Console.ReadLine();
